@@ -1,25 +1,25 @@
 /*!
- * Copyright (c) 2024 Christian Fries. All rights reserved.
+ * Copyright (c) 2025 Christian Fries. All rights reserved.
  */
 
 import { expect } from 'chai';
 import * as jose from 'jose';
 // @ts-ignore
 import jsigs from 'jsonld-signatures';
-import { ES256Signature2020 } from '../lib/PS256Signature2020.js';
+import { PS256Signature2020 } from '../lib/PS256Signature2020.js';
 import { mockCredential } from './mock-data.js';
 import { createDocumentLoader, createDidDocument } from './documentLoader.js';
 
 const { purposes: { AssertionProofPurpose } } = jsigs;
 
-describe('ES256Signature2020', () => {
-  let suite: ES256Signature2020;
+describe('PS256Signature2020', () => {
+  let suite: PS256Signature2020;
   let documentLoader: any;
   let keyPair: any;
 
   beforeEach(async () => {
-    // Generate fresh ES256 key pair for each test
-    const generatedKeyPair = await jose.generateKeyPair("ES256", { extractable: true });
+    // Generate fresh PS256 key pair for each test
+    const generatedKeyPair = await jose.generateKeyPair("PS256", { extractable: true });
     const privateKeyJwkRaw = await jose.exportJWK(generatedKeyPair.privateKey);
     const publicKeyJwkRaw = await jose.exportJWK(generatedKeyPair.publicKey);
 
@@ -48,7 +48,7 @@ describe('ES256Signature2020', () => {
       };
 
       // Create suite with key - the default signer will be used automatically
-      suite = new ES256Signature2020({ key });
+      suite = new PS256Signature2020({ key });
 
       // Sign the credential
       const signedCredential = await jsigs.sign({ ...mockCredential }, {
@@ -65,7 +65,7 @@ describe('ES256Signature2020', () => {
 
       // Create verification suite without explicit verifier
       // The default verifier will be created automatically from the verification method
-      const verifySuite = new ES256Signature2020();
+      const verifySuite = new PS256Signature2020();
 
       // Verify the signed credential
       const result = await jsigs.verify(signedCredential, {
@@ -78,47 +78,9 @@ describe('ES256Signature2020', () => {
       expect(result).to.have.property('verified', true);
     });
 
-    it('should sign and verify a credential using EcdsaMultikey', async () => {
-      // Dynamically import ES module to avoid CommonJS/ESM interop issues
-      // @ts-ignore
-      const EcdsaMultikey = await import('@digitalbazaar/ecdsa-multikey');
-      
-      // Create EcdsaMultikey from the existing keyPair's JWK
-      const ecdsaMultikey = await EcdsaMultikey.fromJwk({
-        jwk: keyPair.privateKeyJwk,
-        secretKey: true,
-        id: keyPair.id,
-        controller: keyPair.controller
-      });
-
-      // Create suite with the EcdsaMultikey - it has built-in signer
-      suite = new ES256Signature2020({ key: ecdsaMultikey });
-
-      // Sign the credential
-      const signedCredential = await jsigs.sign({ ...mockCredential }, {
-        suite,
-        purpose: new AssertionProofPurpose(),
-        documentLoader
-      });
-
-      // Verify the credential has a proof
-      expect(signedCredential).to.have.property('proof');
-      expect(signedCredential.proof).to.have.property('type', 'JsonWebSignature2020');
-      expect(signedCredential.proof).to.have.property('proofValue');
-      expect(signedCredential.proof.proofValue).to.match(/^z/);
-      
-      const verifySuite = new ES256Signature2020();
-
-      // Verify the signed credential
-      const result = await jsigs.verify(signedCredential, {
-        suite: verifySuite,
-        purpose: new AssertionProofPurpose(),
-        documentLoader
-      });
-
-      // Check verification result
-      expect(result).to.have.property('verified', true);
-    });
+    // Note: EcdsaMultikey is specific to ECDSA/elliptic curve keys
+    // For PS256 (RSA-PSS), we would need an RSA-specific multikey library
+    // This test is removed as it's not applicable to RSA keys
   });
 });
 

@@ -1,5 +1,5 @@
 /*!
- * Copyright (c) 2024 Christian Fries. All rights reserved.
+ * Copyright (c) 2025 Christian Fries. All rights reserved.
  * Based on Ed25519Signature2020 implementation pattern from Digital Bazaar
  */
 // @ts-ignore
@@ -18,10 +18,10 @@ const MULTIBASE_BASE58BTC_HEADER = 'z';
 const crypto = globalThis.crypto;
 
 /**
- * ES256Signature2020 suite for creating and verifying Data Integrity Proofs
- * using ECDSA with P-256 curve (ES256 algorithm)
+ * PS256Signature2020 suite for creating and verifying Data Integrity Proofs
+ * using RSASSA-PSS with SHA-256 (PS256 algorithm)
  */
-export class ES256Signature2020 extends LinkedDataSignature {
+export class PS256Signature2020 extends LinkedDataSignature {
   public signer: any;
   public verifier: any;
   public key: any;
@@ -61,7 +61,7 @@ export class ES256Signature2020 extends LinkedDataSignature {
   }: any = {}) {
     // If no signer is provided, create a default signer using Web Crypto API
     if (!signer && key && key.privateKey && !key.signer) {
-      key.signer = ES256Signature2020._createDefaultSigner(key);
+      key.signer = PS256Signature2020._createDefaultSigner(key);
     }
 
     super({
@@ -75,7 +75,7 @@ export class ES256Signature2020 extends LinkedDataSignature {
     this.key = key;
     // signer and verifier are set by super's _processSignatureParams
 
-    // ES256 uses JsonWebKey2020 key type
+    // PS256 uses JsonWebKey2020 key type
     this.requiredKeyType = 'JsonWebKey2020';
   }
 
@@ -91,14 +91,14 @@ export class ES256Signature2020 extends LinkedDataSignature {
     return await crypto.subtle.importKey(
       'jwk',
       jwk,
-      { name: 'ECDSA', namedCurve: 'P-256' },
+      { name: 'RSA-PSS', hash: 'SHA-256' },
       false,
       [usage]
     );
   }
 
   /**
-   * Creates a default signer function for ES256 signing using Web Crypto API.
+   * Creates a default signer function for PS256 signing using Web Crypto API.
    * 
    * @param {object} key - Key object containing the private key in JWK format.
    * @returns {Function} A signer function that returns an object with a sign method.
@@ -108,10 +108,10 @@ export class ES256Signature2020 extends LinkedDataSignature {
     return () => ({
       sign: async (options: { data: Uint8Array }): Promise<Uint8Array> => {
         // Import the private key
-        const privateKey = await ES256Signature2020._importKey(key.privateKey, 'sign');
+        const privateKey = await PS256Signature2020._importKey(key.privateKey, 'sign');
 
         const signature = await crypto.subtle.sign(
-          { name: 'ECDSA', hash: 'SHA-256' },
+          { name: 'RSA-PSS', saltLength: 32 },
           privateKey,
           options.data as BufferSource
         );
@@ -122,7 +122,7 @@ export class ES256Signature2020 extends LinkedDataSignature {
   }
 
   /**
-   * Creates a default verifier function for ES256 verification using Web Crypto API.
+   * Creates a default verifier function for PS256 verification using Web Crypto API.
    * 
    * @param {object} publicKeyJwk - Public key in JWK format.
    * @returns {Promise<object>} A verifier object with a verify method.
@@ -130,13 +130,13 @@ export class ES256Signature2020 extends LinkedDataSignature {
    */
   private static async _createDefaultVerifier(publicKeyJwk: any): Promise<any> {
     // Import the public key
-    const publicKey = await ES256Signature2020._importKey(publicKeyJwk, 'verify');
+    const publicKey = await PS256Signature2020._importKey(publicKeyJwk, 'verify');
     
     return {
       async verify({ data, signature }: { data: Uint8Array; signature: Uint8Array }): Promise<boolean> {
         try {
           return await crypto.subtle.verify(
-            { name: 'ECDSA', hash: 'SHA-256' },
+            { name: 'RSA-PSS', saltLength: 32 },
             publicKey,
             signature as BufferSource,
             data as BufferSource
@@ -199,7 +199,7 @@ export class ES256Signature2020 extends LinkedDataSignature {
     
     // Create default verifier if none provided
     if (!verifier && verificationMethod?.publicKeyJwk) {
-      verifier = await ES256Signature2020._createDefaultVerifier(
+      verifier = await PS256Signature2020._createDefaultVerifier(
         verificationMethod.publicKeyJwk
       );
     }
@@ -212,7 +212,7 @@ export class ES256Signature2020 extends LinkedDataSignature {
   }
 
   async assertVerificationMethod({ verificationMethod }: any): Promise<void> {
-    // ES256 uses JsonWebKey2020 key type
+    // PS256 uses JsonWebKey2020 key type
     if (verificationMethod.type !== 'JsonWebKey2020' && 
         verificationMethod.type !== 'JsonWebKey') {
       throw new Error(`Unsupported key type "${verificationMethod.type}".`);
@@ -224,10 +224,10 @@ export class ES256Signature2020 extends LinkedDataSignature {
         'The verification method must contain a "publicKeyJwk" property.');
     }
 
-    // Verify it's an EC key with P-256 curve
+    // Verify it's an RSA key
     const jwk = verificationMethod.publicKeyJwk;
-    if (jwk.kty !== 'EC' || jwk.crv !== 'P-256') {
-      throw new Error('The key must be an EC key with P-256 curve for ES256.');
+    if (jwk.kty !== 'RSA') {
+      throw new Error('The key must be an RSA key for PS256.');
     }
 
     if (!_includesContext({ document: verificationMethod, contextUrl: SUITE_CONTEXT_URL })) {

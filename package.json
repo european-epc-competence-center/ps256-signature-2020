@@ -33,7 +33,6 @@
   },
   "homepage": "https://github.com/european-epc-competence-center/ps256-signature-2020#readme",
   "dependencies": {
-    "@digitalbazaar/ecdsa-multikey": "^1.8.0",
     "base58-universal": "^2.0.0",
     "jsonld": "^5.2.0",
     "jsonld-signatures": "^11.3.0"
