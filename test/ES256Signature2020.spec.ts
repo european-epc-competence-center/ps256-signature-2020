@@ -6,7 +6,7 @@ import { expect } from 'chai';
 import * as jose from 'jose';
 // @ts-ignore
 import jsigs from 'jsonld-signatures';
-import { ES256Signature2020 } from '../lib/ES256Signature2020.js';
+import { ES256Signature2020 } from '../lib/PS256Signature2020.js';
 import { mockCredential } from './mock-data.js';
 import { createDocumentLoader, createDidDocument } from './documentLoader.js';
 
