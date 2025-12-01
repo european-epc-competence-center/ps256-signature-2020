@@ -190,7 +190,7 @@ function extractUnreleasedChanges() {
 }
 
 function main() {
-  log("🚀 ES256 Signature 2020 Release Tool", "bright");
+  log("🚀 PS256 Signature 2020 Release Tool", "bright");
   log("====================================\n", "bright");
 
   // Parse command line arguments
@@ -261,7 +261,7 @@ function main() {
   if (!skipGit) {
     log("1. The changes and tags have been pushed to remote", "green");
     log("2. Create a GitHub release from the tag to trigger npm publishing", "cyan");
-    log(`   Visit: https://github.com/european-epc-competence-center/es256-signature-2020/releases/new?tag=v${newVersion}`, "cyan");
+    log(`   Visit: https://github.com/european-epc-competence-center/ps256-signature-2020/releases/new?tag=v${newVersion}`, "cyan");
   } else {
     log("1. Commit and push changes manually", "cyan");
     log("2. Create and push the git tag", "cyan");

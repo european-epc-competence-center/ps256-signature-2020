@@ -1,6 +1,6 @@
 # Release Process
 
-This document describes how to release a new version of the `es256-signature-2020` package to npm.
+This document describes how to release a new version of the `ps256-signature-2020` package to npm.
 
 ## Prerequisites
 
@@ -95,7 +95,7 @@ Check the Actions tab in GitHub to see the error. Common issues:
 Contact the package maintainers or use npm's unpublish command (only works within 72 hours):
 
 ```bash
-npm unpublish es256-signature-2020@<version>
+npm unpublish ps256-signature-2020@<version>
 ```
 
 ## Version Numbering
